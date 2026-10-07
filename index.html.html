@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CPOS Merchant Savings Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    input[type=range] {
+      accent-color: #2B44FF;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen py-6 px-3 sm:px-6 antialiased flex flex-col justify-between">
+
+  <div class="max-w-4xl mx-auto w-full space-y-6">
+
+    <!-- Simple Top Bar with Brand Logo -->
+    <header class="bg-white border border-slate-200 rounded-xl px-5 py-3.5 flex items-center justify-between shadow-xs">
+      <div class="flex items-center gap-3">
+        <!-- Exact CPOS SVG Vector Mark & Wordmark -->
+        <div class="flex items-center gap-2">
+          <svg class="h-8 w-auto" viewBox="0 0 240 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Icon: C with inner amber dot and lower cobalt segment -->
+            <path d="M 44 14 A 25 25 0 0 0 14 38 A 25 25 0 0 0 35 62" stroke="#0D1164" stroke-width="11" stroke-linecap="round" fill="none" />
+            <path d="M 35 62 A 25 25 0 0 0 54 53" stroke="#2B44FF" stroke-width="11" stroke-linecap="round" fill="none" />
+            <circle cx="45" cy="30" r="8" fill="#FFB300" />
+            <!-- Text: cpos -->
+            <text x="76" y="52" font-family="'Inter', -apple-system, sans-serif" font-weight="900" font-size="44" fill="#0D1164" letter-spacing="-1.5">cpos</text>
+          </svg>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <button id="copyQuoteBtn" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200 cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+          </svg>
+          <span>Copy Summary</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Current Business Processing Input Section -->
+    <div class="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-xs">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Current Card Processing Details</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Enter your monthly numbers to calculate your savings</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-5">
+        <!-- Monthly Card Sales -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-center text-xs font-medium text-slate-700">
+            <label for="volumeInput">Estimated Monthly Credit Card Revenue</label>
+          </div>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-semibold text-sm">$</span>
+            <input type="number" id="volumeInput" value="25000" min="0" max="200000" step="500"
+              class="w-full pl-7 pr-3 py-2 text-right font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:border-[#2B44FF] focus:ring-1 focus:ring-[#2B44FF] outline-none text-base">
+          </div>
+          <input type="range" id="volumeSlider" min="0" max="200000" step="1000" value="25000" list="volumeTicks"
+            class="w-full h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+          <datalist id="volumeTicks">
+            <option value="0"></option>
+            <option value="50000"></option>
+            <option value="100000"></option>
+            <option value="150000"></option>
+            <option value="200000"></option>
+          </datalist>
+          <!-- Exact percentage-aligned scale marks with tap-to-set functionality -->
+          <div class="relative w-full h-4 text-[11px] text-slate-400 font-mono select-none">
+            <span class="absolute left-0 cursor-pointer hover:text-[#2B44FF] transition-colors" onclick="setVolume(0)">$0</span>
+            <span class="absolute left-[25%] -translate-x-1/2 cursor-pointer hover:text-[#2B44FF] transition-colors" onclick="setVolume(50000)">$50k</span>
+            <span class="absolute left-[50%] -translate-x-1/2 cursor-pointer hover:text-[#2B44FF] font-semibold text-slate-500 transition-colors" onclick="setVolume(100000)">$100k</span>
+            <span class="absolute left-[75%] -translate-x-1/2 cursor-pointer hover:text-[#2B44FF] transition-colors" onclick="setVolume(150000)">$150k</span>
+            <span class="absolute right-0 cursor-pointer hover:text-[#2B44FF] transition-colors" onclick="setVolume(200000)">$200k</span>
+          </div>
+        </div>
+
+        <!-- Current Effective Rate -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-center text-xs font-medium text-slate-700">
+            <label for="rateInput">Estimated Effective Rate</label>
+            <span class="text-[11px] text-slate-400 font-normal">Typical: 2.0% – 3.5%</span>
+          </div>
+          <div class="relative">
+            <input type="number" id="rateInput" value="2.50" min="1.0" max="4.0" step="0.05"
+              class="w-full pl-3 pr-8 py-2 text-right font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:border-[#2B44FF] focus:ring-1 focus:ring-[#2B44FF] outline-none text-base">
+            <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 font-semibold text-sm">%</span>
+          </div>
+          <input type="range" id="rateSlider" min="1.0" max="4.0" step="0.05" value="2.50" list="rateTicks"
+            class="w-full h-1.5 bg-slate-200 rounded-lg cursor-pointer">
+          <datalist id="rateTicks">
+            <option value="1.0"></option>
+            <option value="2.5"></option>
+            <option value="4.0"></option>
+          </datalist>
+          <div class="relative w-full h-4 text-[11px] text-slate-400 font-mono select-none">
+            <span class="absolute left-0 cursor-pointer hover:text-[#2B44FF] transition-colors" onclick="setRate(1.0)">1.0%</span>
+            <span class="absolute left-[50%] -translate-x-1/2 cursor-pointer hover:text-[#2B44FF] font-semibold text-slate-500 transition-colors" onclick="setRate(2.5)">2.5%</span>
+            <span class="absolute right-0 cursor-pointer hover:text-[#2B44FF] transition-colors" onclick="setRate(4.0)">4.0%</span>
+          </div>
+        </div>
+
+        <!-- Current Terminal / POS Fee -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-center text-xs font-medium text-slate-700">
+            <label for="rentalInput">Terminal + Misc Fees</label>
+            <span class="text-[11px] text-slate-400 font-normal">Optional</span>
+          </div>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-semibold text-sm">$</span>
+            <input type="number" id="rentalInput" value="50" min="0" max="300" step="5"
+              class="w-full pl-7 pr-12 py-2 text-right font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:border-[#2B44FF] focus:ring-1 focus:ring-[#2B44FF] outline-none text-base">
+            <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 text-xs">/mo</span>
+          </div>
+          <p class="text-[11px] text-slate-500 pt-1">Monthly rental or fee paid to your current bank or processor.</p>
+        </div>
+      </div>
+
+      <!-- Current Baseline Cost Line -->
+      <div class="mt-5 p-3.5 bg-rose-50/70 border border-rose-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+        <span class="text-rose-900 font-medium">
+          Estimated amount your current processor takes right now:
+        </span>
+        <div class="text-right">
+          <span class="text-sm font-extrabold text-rose-700" id="currentMonthlyTotal">$675.00 / month</span>
+          <span class="text-slate-500 ml-1">($<span id="currentAnnualTotal">8,100.00</span> / year)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN SHOWCASE: CPOS FreePay™ -->
+    <div class="bg-white border-2 border-[#0D1164] rounded-xl p-5 sm:p-6 shadow-sm space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-2">
+        <div>
+          <div class="inline-flex items-center gap-2 mb-1">
+            <span class="text-[11px] font-bold text-[#2B44FF] bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">Dual Pricing</span>
+          </div>
+          <h2 class="text-xl font-extrabold text-[#0D1164]">
+            CPOS FreePay™ Savings
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Eliminates your card processing fee entirely — your business keeps 100% of sales</p>
+        </div>
+        <div class="text-xs text-slate-500 font-medium text-left sm:text-right">
+          Based on $<span id="resultVolumeDisplay" class="font-bold text-slate-800">25,000</span> / month
+          <div class="text-[11px] text-slate-400">$57/mo terminal • One Time Fee: $200 ($50 app + $150 setup)</div>
+        </div>
+      </div>
+
+      <!-- Highlights: Monthly Savings + Percentage Saved -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-[#0D1164]">Monthly Money Kept</span>
+            <span id="percentSavedBadge" class="text-xs font-bold bg-[#FFB300] text-slate-900 px-2.5 py-0.5 rounded-full shadow-xs">
+              91.6% Saved
+            </span>
+          </div>
+          <div class="text-3xl sm:text-4xl font-black text-[#2B44FF] mt-1" id="monthlySavingsVal">+$618.00</div>
+          <div class="text-xs text-slate-600 mt-1 font-medium">Kept in your business account every single month</div>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+          <div class="text-xs font-semibold text-slate-700">Year 1 Net Cash Kept</div>
+          <div class="text-3xl sm:text-4xl font-black text-slate-900 mt-1" id="year1SavingsVal">+$7,216.00</div>
+          <div class="text-xs text-slate-500 mt-1">Includes the $200 One Time Fee ($50 app + $150 setup)</div>
+        </div>
+      </div>
+
+      <!-- 2 & 3 Year Estimated Save Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-slate-50/80 border border-slate-200 rounded-xl p-3.5">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">2-Year Cumulative Savings</div>
+          <div class="text-2xl font-black text-[#0D1164] mt-0.5" id="year2SavingsVal">+$14,632.00</div>
+          <div class="text-[11px] text-slate-500 mt-0.5">24-month net cash kept (after One Time Fee)</div>
+        </div>
+
+        <div class="bg-slate-50/80 border border-slate-200 rounded-xl p-3.5">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">3-Year Cumulative Savings</div>
+          <div class="text-2xl font-black text-[#0D1164] mt-0.5" id="year3SavingsVal">+$22,048.00</div>
+          <div class="text-[11px] text-slate-500 mt-0.5">36-month net cash kept (after One Time Fee)</div>
+        </div>
+      </div>
+
+      <!-- Detailed Breakdown Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px]">
+              <th class="py-2.5 font-semibold">Cost Breakdown</th>
+              <th class="py-2.5 text-right font-semibold">Current Processor</th>
+              <th class="py-2.5 text-right font-semibold text-[#0D1164]">CPOS FreePay™</th>
+              <th class="py-2.5 text-right font-semibold text-[#2B44FF]">Your Savings</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            <tr>
+              <td class="py-2.5 font-medium">Card Processing Cost:</td>
+              <td class="py-2.5 text-right font-mono" id="rowTradProcessing">$625.00</td>
+              <td class="py-2.5 text-right font-mono font-bold text-[#0D1164]" id="rowCposProcessing">$0.00 (Dual pricing)</td>
+              <td class="py-2.5 text-right font-mono text-[#2B44FF] font-semibold" id="rowProcessingDiff">+$625.00</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 font-medium">Monthly Terminal / Software Fee:</td>
+              <td class="py-2.5 text-right font-mono" id="rowTradRental">$50.00</td>
+              <td class="py-2.5 text-right font-mono font-medium">$57.00</td>
+              <td class="py-2.5 text-right font-mono text-slate-500" id="rowRentalDiff">-$7.00</td>
+            </tr>
+            <tr class="font-bold bg-slate-50/70 text-slate-900">
+              <td class="py-2.5">Total Monthly Cost:</td>
+              <td class="py-2.5 text-right font-mono text-rose-700" id="rowTradMonthly">$675.00</td>
+              <td class="py-2.5 text-right font-mono text-[#0D1164]">$57.00</td>
+              <td class="py-2.5 text-right font-mono text-[#2B44FF] font-extrabold" id="rowMonthlySavings">+$618.00 / mo</td>
+            </tr>
+            <tr>
+              <td class="py-2.5 text-slate-500">One Time Fee (Year 1 only):</td>
+              <td class="py-2.5 text-right font-mono text-slate-400">$0.00</td>
+              <td class="py-2.5 text-right font-mono text-slate-600">$200.00 ($50+$150)</td>
+              <td class="py-2.5 text-right font-mono text-slate-400">One-time</td>
+            </tr>
+            <tr class="font-bold border-t-2 border-slate-300">
+              <td class="py-2.5 text-slate-900">Total Year 1 Cost:</td>
+              <td class="py-2.5 text-right font-mono text-rose-700" id="rowTradYear1">$8,100.00</td>
+              <td class="py-2.5 text-right font-mono text-slate-900" id="rowCposYear1">$884.00</td>
+              <td class="py-2.5 text-right font-mono text-[#2B44FF] text-sm font-black" id="rowYear1Net">+$7,216.00</td>
+            </tr>
+            <tr class="font-bold text-slate-900">
+              <td class="py-2.5 text-slate-900">Total 2-Year Cost:</td>
+              <td class="py-2.5 text-right font-mono text-rose-700" id="rowTradYear2">$16,200.00</td>
+              <td class="py-2.5 text-right font-mono text-slate-900" id="rowCposYear2">$1,568.00</td>
+              <td class="py-2.5 text-right font-mono text-[#0D1164] text-sm font-black" id="rowYear2Net">+$14,632.00</td>
+            </tr>
+            <tr class="font-bold text-slate-900 bg-blue-50/30">
+              <td class="py-2.5 text-slate-900">Total 3-Year Cost:</td>
+              <td class="py-2.5 text-right font-mono text-rose-700" id="rowTradYear3">$24,300.00</td>
+              <td class="py-2.5 text-right font-mono text-slate-900" id="rowCposYear3">$2,252.00</td>
+              <td class="py-2.5 text-right font-mono text-[#2B44FF] text-sm font-black" id="rowYear3Net">+$22,048.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Trust points for business owners -->
+      <div class="pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3 text-slate-600 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="text-[#2B44FF] font-bold">✓</span> No long-term lock-in contract
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[#2B44FF] font-bold">✓</span> Next-day deposit to your bank
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[#2B44FF] font-bold">✓</span> Direct support — I'm your first contact
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM SECTION: Alternative Option CPOS IC+ (Shown if needed) -->
+    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm sm:text-base font-bold text-[#0D1164]">CPOS IC+ (Interchange Plus)</h3>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">
+            Prefer traditional pricing without dual pricing? Direct wholesale interchange with a low 1.50% average rate.
+          </p>
+        </div>
+        <button type="button" id="toggleIcBtn" onclick="toggleICSection()" 
+          class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#0D1164] bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors cursor-pointer self-start sm:self-auto shrink-0">
+          <span id="toggleIcText">Show IC+ Comparison</span>
+          <svg id="toggleIcIcon" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Expandable / Accessible IC+ Content -->
+      <div id="icDetailsContainer" class="hidden pt-4 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <div class="text-slate-500">Card Processing Rate</div>
+            <div class="text-base font-bold text-slate-900 mt-0.5">1.50% <span class="text-xs font-normal text-slate-500">flat average</span></div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Interchange Plus pricing</div>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <div class="text-slate-500">Monthly Software & Terminal</div>
+            <div class="text-base font-bold text-slate-900 mt-0.5">$45.00 <span class="text-xs font-normal text-slate-500">/ month</span></div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Terminal & platform fee</div>
+          </div>
+          <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <div class="text-slate-500">One Time Fee</div>
+            <div class="text-base font-bold text-slate-900 mt-0.5">$200.00</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">$50 app + $150 setup</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="p-3.5 bg-blue-50/50 border border-blue-100 rounded-xl">
+            <div class="text-[11px] font-semibold text-[#0D1164] uppercase tracking-wider">IC+ Monthly Savings</div>
+            <div class="text-2xl font-black text-[#2B44FF] mt-1" id="icMonthlySavingsVal">+$255.00</div>
+            <div class="text-[11px] text-slate-600 mt-0.5"><span id="icPercentSavedBadge" class="font-bold">37.8%</span> reduction vs current</div>
+          </div>
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+            <div class="text-[11px] font-semibold text-slate-700 uppercase tracking-wider">Year 1 Net Kept</div>
+            <div class="text-2xl font-black text-slate-900 mt-1" id="icYear1SavingsVal">+$2,860.00</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Includes $200 One Time Fee</div>
+          </div>
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+            <div class="text-[11px] font-semibold text-slate-700 uppercase tracking-wider">3-Year Cumulative Kept</div>
+            <div class="text-2xl font-black text-[#0D1164] mt-1" id="icYear3SavingsVal">+$8,980.00</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">36-month total kept</div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto text-xs">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px]">
+                <th class="py-2">Metric</th>
+                <th class="py-2 text-right">Current Processor</th>
+                <th class="py-2 text-right font-semibold text-[#0D1164]">CPOS IC+</th>
+                <th class="py-2 text-right font-semibold text-[#2B44FF]">Savings</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700">
+              <tr>
+                <td class="py-2 font-medium">Card Processing Cost:</td>
+                <td class="py-2 text-right font-mono" id="icRowTradProcessing">$625.00</td>
+                <td class="py-2 text-right font-mono font-bold text-slate-900" id="icRowCposProcessing">$375.00</td>
+                <td class="py-2 text-right font-mono text-[#2B44FF] font-semibold" id="icRowProcessingDiff">+$250.00</td>
+              </tr>
+              <tr>
+                <td class="py-2 font-medium">Monthly Terminal / Misc:</td>
+                <td class="py-2 text-right font-mono" id="icRowTradRental">$50.00</td>
+                <td class="py-2 text-right font-mono">$45.00</td>
+                <td class="py-2 text-right font-mono text-[#2B44FF] font-semibold" id="icRowRentalDiff">+$5.00</td>
+              </tr>
+              <tr class="font-bold bg-slate-50/70 text-slate-900">
+                <td class="py-2">Total Monthly Cost:</td>
+                <td class="py-2 text-right font-mono text-rose-700" id="icRowTradMonthly">$675.00</td>
+                <td class="py-2 text-right font-mono text-slate-900" id="icRowCposMonthly">$420.00</td>
+                <td class="py-2 text-right font-mono text-[#2B44FF]" id="icRowMonthlySavings">+$255.00 / mo</td>
+              </tr>
+              <tr class="font-bold border-t border-slate-200">
+                <td class="py-2">Year 1 Total Cost:</td>
+                <td class="py-2 text-right font-mono text-rose-700" id="icRowTradYear1">$8,100.00</td>
+                <td class="py-2 text-right font-mono text-slate-900" id="icRowCposYear1">$5,240.00</td>
+                <td class="py-2 text-right font-mono text-[#2B44FF] font-black" id="icRowYear1Net">+$2,860.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Small Footer -->
+    <footer class="text-center text-xs text-slate-400 py-2">
+      CPOS Payment Solutions • Prepared for business estimate review • Rates subject to standard card network regulations
+    </footer>
+
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-[#0D1164] text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-lg transition-opacity duration-300 opacity-0 pointer-events-none z-50">
+    Quote summary copied to clipboard!
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // State variables
+    let volume = 25000;
+    let rate = 2.50;
+    let rental = 50;
+    let isIcExpanded = false;
+
+    const ONE_TIME_FEE = 200; // $50 app + $150 setup
+
+    // Plan definitions
+    const FREEPAY_PLAN = {
+      name: 'CPOS FreePay™',
+      monthlyRental: 57,
+      cardRate: 0.0
+    };
+
+    const IC_PLAN = {
+      name: 'CPOS IC+',
+      monthlyRental: 45,
+      cardRate: 1.5
+    };
+
+    // DOM references
+    const volumeInput = document.getElementById('volumeInput');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const rateInput = document.getElementById('rateInput');
+    const rateSlider = document.getElementById('rateSlider');
+    const rentalInput = document.getElementById('rentalInput');
+
+    const currentMonthlyTotal = document.getElementById('currentMonthlyTotal');
+    const currentAnnualTotal = document.getElementById('currentAnnualTotal');
+    const resultVolumeDisplay = document.getElementById('resultVolumeDisplay');
+
+    // FreePay Displays
+    const monthlySavingsVal = document.getElementById('monthlySavingsVal');
+    const percentSavedBadge = document.getElementById('percentSavedBadge');
+    const year1SavingsVal = document.getElementById('year1SavingsVal');
+    const year2SavingsVal = document.getElementById('year2SavingsVal');
+    const year3SavingsVal = document.getElementById('year3SavingsVal');
+
+    const rowTradProcessing = document.getElementById('rowTradProcessing');
+    const rowCposProcessing = document.getElementById('rowCposProcessing');
+    const rowProcessingDiff = document.getElementById('rowProcessingDiff');
+    const rowTradRental = document.getElementById('rowTradRental');
+    const rowRentalDiff = document.getElementById('rowRentalDiff');
+    const rowTradMonthly = document.getElementById('rowTradMonthly');
+    const rowMonthlySavings = document.getElementById('rowMonthlySavings');
+    const rowTradYear1 = document.getElementById('rowTradYear1');
+    const rowCposYear1 = document.getElementById('rowCposYear1');
+    const rowYear1Net = document.getElementById('rowYear1Net');
+    const rowTradYear2 = document.getElementById('rowTradYear2');
+    const rowCposYear2 = document.getElementById('rowCposYear2');
+    const rowYear2Net = document.getElementById('rowYear2Net');
+    const rowTradYear3 = document.getElementById('rowTradYear3');
+    const rowCposYear3 = document.getElementById('rowCposYear3');
+    const rowYear3Net = document.getElementById('rowYear3Net');
+
+    // IC+ Displays
+    const toggleIcBtn = document.getElementById('toggleIcBtn');
+    const toggleIcText = document.getElementById('toggleIcText');
+    const toggleIcIcon = document.getElementById('toggleIcIcon');
+    const icDetailsContainer = document.getElementById('icDetailsContainer');
+
+    const icMonthlySavingsVal = document.getElementById('icMonthlySavingsVal');
+    const icPercentSavedBadge = document.getElementById('icPercentSavedBadge');
+    const icYear1SavingsVal = document.getElementById('icYear1SavingsVal');
+    const icYear3SavingsVal = document.getElementById('icYear3SavingsVal');
+
+    const icRowTradProcessing = document.getElementById('icRowTradProcessing');
+    const icRowCposProcessing = document.getElementById('icRowCposProcessing');
+    const icRowProcessingDiff = document.getElementById('icRowProcessingDiff');
+    const icRowTradRental = document.getElementById('icRowTradRental');
+    const icRowRentalDiff = document.getElementById('icRowRentalDiff');
+    const icRowTradMonthly = document.getElementById('icRowTradMonthly');
+    const icRowCposMonthly = document.getElementById('icRowCposMonthly');
+    const icRowMonthlySavings = document.getElementById('icRowMonthlySavings');
+    const icRowTradYear1 = document.getElementById('icRowTradYear1');
+    const icRowCposYear1 = document.getElementById('icRowCposYear1');
+    const icRowYear1Net = document.getElementById('icRowYear1Net');
+
+    const copyQuoteBtn = document.getElementById('copyQuoteBtn');
+    const toast = document.getElementById('toast');
+
+    // Number formatting helper
+    function fmt(num) {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(num);
+    }
+
+    // Toggle IC+ section at bottom
+    function toggleICSection() {
+      isIcExpanded = !isIcExpanded;
+      if (isIcExpanded) {
+        icDetailsContainer.classList.remove('hidden');
+        toggleIcText.textContent = "Hide IC+ Comparison";
+        toggleIcIcon.classList.add('rotate-180');
+      } else {
+        icDetailsContainer.classList.add('hidden');
+        toggleIcText.textContent = "Show IC+ Comparison";
+        toggleIcIcon.classList.remove('rotate-180');
+      }
+    }
+
+    // Main Calculation
+    function calculate() {
+      // 1. Current Baseline calculations
+      const tradProcessing = volume * (rate / 100);
+      const tradMonthly = tradProcessing + rental;
+      const tradYear1 = tradMonthly * 12;
+      const tradYear2 = tradMonthly * 24;
+      const tradYear3 = tradMonthly * 36;
+
+      // Update Baseline display
+      currentMonthlyTotal.textContent = `${fmt(tradMonthly)} / month`;
+      currentAnnualTotal.textContent = fmt(tradYear1).replace('$', '');
+      resultVolumeDisplay.textContent = volume.toLocaleString('en-US');
+
+      // 2. Primary Showcase: CPOS FreePay calculations
+      const fpProcessing = volume * (FREEPAY_PLAN.cardRate / 100); // 0
+      const fpMonthly = fpProcessing + FREEPAY_PLAN.monthlyRental; // 57
+      const fpYear1 = (fpMonthly * 12) + ONE_TIME_FEE;
+      const fpYear2 = (fpMonthly * 24) + ONE_TIME_FEE;
+      const fpYear3 = (fpMonthly * 36) + ONE_TIME_FEE;
+
+      const fpMonthlySavings = tradMonthly - fpMonthly;
+      const fpYear1Savings = tradYear1 - fpYear1;
+      const fpYear2Savings = tradYear2 - fpYear2;
+      const fpYear3Savings = tradYear3 - fpYear3;
+      const fpPercentSaved = tradMonthly > 0 ? Math.max(0, (fpMonthlySavings / tradMonthly) * 100) : 0;
+
+      // Update FreePay display
+      monthlySavingsVal.textContent = (fpMonthlySavings >= 0 ? '+' : '') + fmt(fpMonthlySavings);
+      percentSavedBadge.textContent = `${fpPercentSaved.toFixed(1)}% Saved`;
+      year1SavingsVal.textContent = (fpYear1Savings >= 0 ? '+' : '') + fmt(fpYear1Savings);
+      year2SavingsVal.textContent = (fpYear2Savings >= 0 ? '+' : '') + fmt(fpYear2Savings);
+      year3SavingsVal.textContent = (fpYear3Savings >= 0 ? '+' : '') + fmt(fpYear3Savings);
+
+      // FreePay table
+      rowTradProcessing.textContent = fmt(tradProcessing);
+      rowCposProcessing.textContent = "$0.00 (Dual pricing)";
+      const procDiff = tradProcessing - fpProcessing;
+      rowProcessingDiff.textContent = (procDiff >= 0 ? '+' : '') + fmt(procDiff);
+
+      rowTradRental.textContent = fmt(rental);
+      const rentDiff = rental - FREEPAY_PLAN.monthlyRental;
+      rowRentalDiff.textContent = (rentDiff >= 0 ? '+' : '') + fmt(rentDiff);
+
+      rowTradMonthly.textContent = fmt(tradMonthly);
+      rowMonthlySavings.textContent = (fpMonthlySavings >= 0 ? '+' : '') + fmt(fpMonthlySavings) + " / mo";
+
+      rowTradYear1.textContent = fmt(tradYear1);
+      rowCposYear1.textContent = fmt(fpYear1);
+      rowYear1Net.textContent = (fpYear1Savings >= 0 ? '+' : '') + fmt(fpYear1Savings);
+
+      rowTradYear2.textContent = fmt(tradYear2);
+      rowCposYear2.textContent = fmt(fpYear2);
+      rowYear2Net.textContent = (fpYear2Savings >= 0 ? '+' : '') + fmt(fpYear2Savings);
+
+      rowTradYear3.textContent = fmt(tradYear3);
+      rowCposYear3.textContent = fmt(fpYear3);
+      rowYear3Net.textContent = (fpYear3Savings >= 0 ? '+' : '') + fmt(fpYear3Savings);
+
+      // 3. Alternative Option: CPOS IC+ calculations
+      const icProcessing = volume * (IC_PLAN.cardRate / 100);
+      const icMonthly = icProcessing + IC_PLAN.monthlyRental;
+      const icYear1 = (icMonthly * 12) + ONE_TIME_FEE;
+      const icYear3 = (icMonthly * 36) + ONE_TIME_FEE;
+
+      const icMonthlySavings = tradMonthly - icMonthly;
+      const icYear1Savings = tradYear1 - icYear1;
+      const icYear3Savings = tradYear3 - icYear3;
+      const icPercentSaved = tradMonthly > 0 ? Math.max(0, (icMonthlySavings / tradMonthly) * 100) : 0;
+
+      // Update IC+ elements
+      icMonthlySavingsVal.textContent = (icMonthlySavings >= 0 ? '+' : '') + fmt(icMonthlySavings);
+      icPercentSavedBadge.textContent = `${icPercentSaved.toFixed(1)}%`;
+      icYear1SavingsVal.textContent = (icYear1Savings >= 0 ? '+' : '') + fmt(icYear1Savings);
+      icYear3SavingsVal.textContent = (icYear3Savings >= 0 ? '+' : '') + fmt(icYear3Savings);
+
+      icRowTradProcessing.textContent = fmt(tradProcessing);
+      icRowCposProcessing.textContent = fmt(icProcessing);
+      const icProcDiff = tradProcessing - icProcessing;
+      icRowProcessingDiff.textContent = (icProcDiff >= 0 ? '+' : '') + fmt(icProcDiff);
+
+      icRowTradRental.textContent = fmt(rental);
+      const icRentDiff = rental - IC_PLAN.monthlyRental;
+      icRowRentalDiff.textContent = (icRentDiff >= 0 ? '+' : '') + fmt(icRentDiff);
+
+      icRowTradMonthly.textContent = fmt(tradMonthly);
+      icRowCposMonthly.textContent = fmt(icMonthly);
+      icRowMonthlySavings.textContent = (icMonthlySavings >= 0 ? '+' : '') + fmt(icMonthlySavings) + " / mo";
+
+      icRowTradYear1.textContent = fmt(tradYear1);
+      icRowCposYear1.textContent = fmt(icYear1);
+      icRowYear1Net.textContent = (icYear1Savings >= 0 ? '+' : '') + fmt(icYear1Savings);
+    }
+
+    // Input listeners
+    volumeInput.addEventListener('input', (e) => {
+      volume = parseFloat(e.target.value) || 0;
+      if (volume <= 200000 && volume >= 0) {
+        volumeSlider.value = volume;
+      }
+      calculate();
+    });
+
+    volumeSlider.addEventListener('input', (e) => {
+      volume = parseFloat(e.target.value);
+      volumeInput.value = volume;
+      calculate();
+    });
+
+    rateInput.addEventListener('input', (e) => {
+      rate = parseFloat(e.target.value) || 0;
+      rateSlider.value = rate;
+      calculate();
+    });
+
+    rateSlider.addEventListener('input', (e) => {
+      rate = parseFloat(e.target.value);
+      rateInput.value = rate.toFixed(2);
+      calculate();
+    });
+
+    rentalInput.addEventListener('input', (e) => {
+      rental = parseFloat(e.target.value) || 0;
+      calculate();
+    });
+
+    function setVolume(val) {
+      volume = val;
+      volumeInput.value = val;
+      volumeSlider.value = val;
+      calculate();
+    }
+
+    function setRate(val) {
+      rate = val;
+      rateInput.value = val.toFixed(2);
+      rateSlider.value = val;
+      calculate();
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 2500);
+    }
+
+    // Copy quote button
+    copyQuoteBtn.addEventListener('click', () => {
+      const tradProcessing = (volume * (rate / 100)) + rental;
+      const tradYear1 = tradProcessing * 12;
+
+      // FreePay
+      const fpMonthly = FREEPAY_PLAN.monthlyRental;
+      const fpYear1 = (fpMonthly * 12) + ONE_TIME_FEE;
+      const fpMonthlySavings = tradProcessing - fpMonthly;
+      const fpYear1Savings = tradYear1 - fpYear1;
+      const fpYear2Savings = (tradProcessing * 24) - ((fpMonthly * 24) + ONE_TIME_FEE);
+      const fpYear3Savings = (tradProcessing * 36) - ((fpMonthly * 36) + ONE_TIME_FEE);
+      const fpPctSaved = tradProcessing > 0 ? ((fpMonthlySavings / tradProcessing) * 100).toFixed(1) : 0;
+
+      // IC+
+      const icProcessing = volume * (IC_PLAN.cardRate / 100);
+      const icMonthly = icProcessing + IC_PLAN.monthlyRental;
+      const icYear1 = (icMonthly * 12) + ONE_TIME_FEE;
+      const icMonthlySavings = tradProcessing - icMonthly;
+      const icYear1Savings = tradYear1 - icYear1;
+
+      const text = 
+`CPOS Business Savings Proposal
+----------------------------------
+Monthly Card Volume: ${fmt(volume)}
+Current Estimated Rate: ${rate.toFixed(2)}% (+ ${fmt(rental)}/mo Terminal + Misc Fees)
+Current Total Processing Cost: ${fmt(tradProcessing)}/mo (${fmt(tradYear1)}/yr)
+
+>>> CPOS FreePay™
+• Card Processing Cost: 0.00% (Dual pricing)
+• Terminal & Software: $57.00/mo
+• One Time Fee: $200 ($50 application + $150 setup)
+• Total Monthly Cost: $57.00/mo
+• Monthly Money Kept: ${fmt(fpMonthlySavings)}/mo (${fpPctSaved}% saved)
+• Year 1 Net Savings: ${fmt(fpYear1Savings)} (after One Time Fee)
+• 2-Year Net Savings: ${fmt(fpYear2Savings)}
+• 3-Year Net Savings: ${fmt(fpYear3Savings)}
+
+>>> CPOS IC+ (Traditional Interchange Plus)
+• Card Processing: 1.50% flat average
+• Terminal & Software: $45.00/mo
+• Monthly Money Kept: ${fmt(icMonthlySavings)}/mo
+• Year 1 Net Savings: ${fmt(icYear1Savings)}`;
+
+      const temp = document.createElement('textarea');
+      temp.value = text;
+      temp.style.position = 'fixed';
+      temp.style.left = '-9999px';
+      document.body.appendChild(temp);
+      temp.select();
+      try {
+        document.execCommand('copy');
+        showToast('Quote summary copied to clipboard!');
+      } catch (e) {}
+      document.body.removeChild(temp);
+    });
+
+    // Initial run
+    calculate();
+  </script>
+</body>
+</html>
